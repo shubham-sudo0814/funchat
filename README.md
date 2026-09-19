@@ -1,4 +1,4 @@
-# Funchat — Modern Social Network & Telegram-Style Bot Platform ⚡🤖
+# Funchat — Modern Social Networks 
 
 Funchat is a full-featured, production-ready social networking platform built with **Django**, **PostgreSQL**, and **Django REST Framework**.
 
