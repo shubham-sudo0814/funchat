@@ -40,7 +40,7 @@ It incorporates user accounts, profiles, bidirectional friendships, directional 
 * Bidirectional user blocking (immediately severs relationships and prevents messaging).
 * Content reporting pipeline for spam, harassment, hate speech, and copyright violations.
 
-### 7. Telegram-Style Bot Platform (`bots` — Section 49)
+### 7. Bot Platform (`bots` — Section 49)
 * **Bot Model**: Name, unique username (e.g. `@study_buddy_bot`), avatar, description, permissions.
 * **Hashed API Keys**: Cryptographically secure keys (`bot_live_...`). Stored solely as SHA-256 hashes. Displayed **once** upon generation and masked thereafter (`bot_live_••••••••••••abcd`).
 * **Bot Authentication**: Custom DRF `BotAPIKeyAuthentication` validating `Authorization: Bearer bot_live_...` with active status, expiration, and last-used tracking.
