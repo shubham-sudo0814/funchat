@@ -22,11 +22,10 @@ SECRET_KEY = os.getenv(
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').strip().lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
-    if host.strip()
+    "funchat-d5bc.onrender.com",
+    "localhost",
+    "127.0.0.1",
 ]
-
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
