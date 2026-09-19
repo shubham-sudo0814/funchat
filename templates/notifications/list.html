@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications — Funchat{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="margin-top: 1.5rem;">
+  <div class="card" style="padding: 1.5rem;">
+    <div class="card-header">
+      <h1 class="card-title" style="font-size: 1.4rem;">🔔 Notifications</h1>
+      <form action="{% url 'notifications:mark_all_read' %}" method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline btn-sm">Mark All as Read</button>
+      </form>
+    </div>
+
+    {% if notifications %}
+      <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        {% for n in notifications %}
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1rem; border-radius:var(--radius-md); background: {% if not n.is_read %}var(--bg-surface-elevated){% else %}transparent{% endif %}; border: 1px solid var(--border);">
+            <div style="display:flex; align-items:center; gap:0.85rem;">
+              <a href="{% url 'accounts:profile' username=n.actor.username %}">
+                {% if n.actor.profile_picture %}
+                  <img src="{{ n.actor.profile_picture.url }}" alt="{{ n.actor.username }}" class="avatar avatar-sm">
+                {% else %}
+                  <div class="avatar avatar-sm" style="display:flex;align-items:center;justify-content:center;background:#374151;color:#fff;font-weight:700;">
+                    {{ n.actor.username|slice:":1"|upper }}
+                  </div>
+                {% endif %}
+              </a>
+              <div>
+                <p style="font-size:0.92rem; margin-bottom:0.2rem;">
+                  <strong><a href="{% url 'accounts:profile' username=n.actor.username %}" style="color:var(--text-main);">@{{ n.actor.username }}</a></strong>
+                  <span class="text-muted">{{ n.verb }}</span>
+                </p>
+                <span class="text-muted" style="font-size:0.78rem;">{{ n.created_at|timesince }} ago</span>
+              </div>
+            </div>
+
+            <div>
+              {% if n.target_url %}
+                <a href="{% url 'notifications:read' pk=n.pk %}" class="btn btn-primary btn-sm">View</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center" style="padding: 3rem 1rem;">
+        <div style="font-size:2.5rem; margin-bottom:0.5rem;">🔔</div>
+        <p class="text-muted">You have no notifications right now.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

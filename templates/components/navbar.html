@@ -1,0 +1,154 @@
+<header class="navbar">
+  <div class="navbar-container">
+    <!-- Left: Logo & Search -->
+    <div class="navbar-left">
+      <a href="{% url 'feed:home' %}" class="navbar-brand" title="Funchat Home">
+        <span class="brand-text">funchat</span>
+      </a>
+
+      {% if user.is_authenticated %}
+      <div class="navbar-search">
+        <form action="{% url 'feed:search' %}" method="GET" role="search">
+          <span class="search-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+          <input
+            type="search"
+            name="q"
+            placeholder="Search Funchat"
+            value="{{ request.GET.q|default:'' }}"
+            autocomplete="off"
+            aria-label="Search Funchat"
+          >
+        </form>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Center: Main Navigation Tabs (Desktop) -->
+    {% if user.is_authenticated %}
+    <nav class="navbar-center" aria-label="Primary Navigation">
+      <!-- Home -->
+      <a
+        href="{% url 'feed:home' %}"
+        class="nav-tab {% if request.resolver_match.view_name == 'feed:home' %}active{% endif %}"
+        title="Home"
+        aria-label="Home"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </a>
+
+      <!-- Friends -->
+      <a
+        href="{% url 'accounts:friends_list' username=user.username %}"
+        class="nav-tab {% if 'friends' in request.path %}active{% endif %}"
+        title="Friends"
+        aria-label="Friends"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </a>
+
+      <!-- Messages -->
+      <a
+        href="{% url 'messaging:inbox' %}"
+        class="nav-tab {% if 'messages' in request.path %}active{% endif %}"
+        title="Messages"
+        aria-label="Messages"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </a>
+
+      <!-- Notifications -->
+      <a
+        href="{% url 'notifications:list' %}"
+        class="nav-tab {% if 'notifications' in request.path %}active{% endif %}"
+        title="Notifications"
+        aria-label="Notifications"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        {% if unread_notifications_count %}
+        <span class="nav-badge">{{ unread_notifications_count }}</span>
+        {% endif %}
+      </a>
+
+      <!-- Pages & Communities -->
+      <a
+        href="{% url 'pages:list' %}"
+        class="nav-tab {% if 'pages' in request.path %}active{% endif %}"
+        title="Pages &amp; Communities"
+        aria-label="Pages"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+          <path d="M6 6h10"></path>
+          <path d="M6 10h10"></path>
+        </svg>
+      </a>
+    </nav>
+    {% endif %}
+
+    <!-- Right: User Controls / Auth -->
+    <div class="navbar-right">
+      {% if user.is_authenticated %}
+      <!-- Profile Button -->
+      <a href="{% url 'accounts:profile' username=user.username %}" class="navbar-user-btn" title="Your Profile">
+        {% if user.profile_picture %}
+          <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="avatar avatar-sm">
+        {% else %}
+          <div class="avatar avatar-sm avatar-placeholder">
+            {{ user.username|slice:":1"|upper }}
+          </div>
+        {% endif %}
+        <span class="user-display-name">{{ user.first_name|default:user.username }}</span>
+      </a>
+
+      <!-- Quick Action Icons -->
+      <a href="{% url 'bots:dashboard' %}" class="icon-btn" title="Bot Studio" aria-label="Bot Studio">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+          <circle cx="12" cy="5" r="2"></circle>
+          <path d="M12 7v4"></path>
+          <line x1="8" y1="16" x2="8" y2="16"></line>
+          <line x1="16" y1="16" x2="16" y2="16"></line>
+        </svg>
+      </a>
+
+      <a href="{% url 'accounts:profile_edit' %}" class="icon-btn" title="Settings" aria-label="Settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </a>
+
+      <a href="{% url 'accounts:logout' %}" class="icon-btn" title="Log Out" aria-label="Log Out">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </a>
+      {% else %}
+      <div class="auth-buttons">
+        <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-sm">Log In</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Sign Up</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</header>

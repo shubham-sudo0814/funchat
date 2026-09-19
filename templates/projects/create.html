@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Showcase Project — Funchat{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="margin-top: 2rem;">
+  <div class="card" style="padding: 2rem;">
+    <div class="card-header">
+      <h1 class="card-title">🚀 Showcase a Project</h1>
+      <a href="{% url 'projects:list' %}" class="btn btn-outline btn-sm">&larr; Back to Projects</a>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.title.id_for_label }}">Project Title</label>
+        {{ form.title }}
+        {% if form.title.errors %}
+          <div class="form-error">{{ form.title.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.summary.id_for_label }}">Summary</label>
+        {{ form.summary }}
+        {% if form.summary.errors %}
+          <div class="form-error">{{ form.summary.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.description.id_for_label }}">Detailed Description</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+          <div class="form-error">{{ form.description.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.cover_image.id_for_label }}">Screenshot or Cover Banner</label>
+        {{ form.cover_image }}
+        {% if form.cover_image.errors %}
+          <div class="form-error">{{ form.cover_image.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+        <div class="form-group">
+          <label class="form-label" for="{{ form.demo_url.id_for_label }}">Live Demo URL</label>
+          {{ form.demo_url }}
+          {% if form.demo_url.errors %}
+            <div class="form-error">{{ form.demo_url.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.repo_url.id_for_label }}">Source Code / Repo URL</label>
+          {{ form.repo_url }}
+          {% if form.repo_url.errors %}
+            <div class="form-error">{{ form.repo_url.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.tags.id_for_label }}">Tags</label>
+        {{ form.tags }}
+        <div class="form-help">{{ form.tags.help_text }}</div>
+        {% if form.tags.errors %}
+          <div class="form-error">{{ form.tags.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem;">
+        <a href="{% url 'projects:list' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Publish Showcase</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

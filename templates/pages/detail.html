@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page.name }} — Funchat{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 860px; margin-top: 1.5rem;">
+  <div class="card" style="padding:0; overflow:hidden;">
+    <!-- Cover Image -->
+    {% if page.cover_image %}
+      <div style="height:200px; width:100%; background:#000; overflow:hidden;">
+        <img src="{{ page.cover_image.url }}" alt="Page cover" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+    {% else %}
+      <div style="height:140px; width:100%; background:linear-gradient(135deg, var(--primary), var(--secondary));"></div>
+    {% endif %}
+
+    <!-- Page Info Header -->
+    <div style="padding: 1.5rem 2rem; position:relative;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem; margin-top:-50px; margin-bottom:1rem;">
+        <div style="display:flex; align-items:flex-end; gap:1rem;">
+          {% if page.avatar %}
+            <img src="{{ page.avatar.url }}" alt="{{ page.name }}" class="avatar avatar-xl" style="border:4px solid var(--bg-surface);">
+          {% else %}
+            <div class="avatar avatar-xl" style="display:flex;align-items:center;justify-content:center;background:var(--primary);color:#fff;font-size:2rem;font-weight:700;border:4px solid var(--bg-surface);">
+              {{ page.name|slice:":1"|upper }}
+            </div>
+          {% endif %}
+          <div style="margin-bottom:0.5rem;">
+            <h1 style="font-size: 1.6rem; font-weight:800; color:var(--text-main);">{{ page.name }}</h1>
+            <span class="badge badge-primary">{{ page.get_category_display }}</span>
+          </div>
+        </div>
+
+        <div>
+          {% if not is_owner %}
+            <form action="{% url 'pages:follow_toggle' slug=page.slug %}" method="POST">
+              {% csrf_token %}
+              {% if is_following %}
+                <button type="submit" class="btn btn-secondary btn-sm">Following ({{ followers_count }})</button>
+              {% else %}
+                <button type="submit" class="btn btn-primary btn-sm">+ Follow ({{ followers_count }})</button>
+              {% endif %}
+            </form>
+          {% else %}
+            <span class="badge badge-success">You manage this page</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Description -->
+      {% if page.description %}
+        <p style="font-size:0.96rem; line-height:1.5; color:var(--text-main); margin-bottom:1rem;">
+          {{ page.description }}
+        </p>
+      {% endif %}
+
+      <div style="font-size:0.85rem; color:var(--text-subtle); border-top:1px solid var(--border); padding-top:0.75rem; display:flex; gap:1.5rem;">
+        <span>Managed by <a href="{% url 'accounts:profile' username=page.owner.username %}">@{{ page.owner.username }}</a></span>
+        <span>Created {{ page.created_at|date:"F Y" }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

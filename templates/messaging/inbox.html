@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages — Funchat{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:0; overflow:hidden; min-height: 680px; display: grid; grid-template-columns: 320px 1fr;">
+  <!-- Left Column: Conversations List -->
+  <div style="border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg-surface);">
+    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="font-size: 1.2rem; font-weight: 800;">Messages</h2>
+      <a href="{% url 'messaging:create_group' %}" class="btn btn-outline btn-sm" title="New Group Chat">+ Group</a>
+    </div>
+
+    <!-- Conversation list items -->
+    <div style="flex:1; overflow-y:auto;">
+      {% if conversations_data %}
+        {% for c in conversations_data %}
+          <a href="{% url 'messaging:conversation_detail' conversation_id=c.conversation.id %}" style="display:flex; align-items:center; gap:0.75rem; padding:0.85rem 1.25rem; border-bottom: 1px solid var(--border); background: {% if c.is_active %}var(--bg-surface-elevated){% else %}transparent{% endif %}; text-decoration:none; color:inherit; transition: background 0.15s ease;">
+            {% if c.other_user %}
+              {% if c.other_user.profile_picture %}
+                <img src="{{ c.other_user.profile_picture.url }}" alt="{{ c.other_user.username }}" class="avatar avatar-sm">
+              {% else %}
+                <div class="avatar avatar-sm" style="display:flex;align-items:center;justify-content:center;background:#374151;color:#fff;font-weight:700;font-size:0.8rem;">
+                  {{ c.other_user.username|slice:":1"|upper }}
+                </div>
+              {% endif %}
+            {% else %}
+              <div class="avatar avatar-sm" style="display:flex;align-items:center;justify-content:center;background:var(--primary);color:#fff;font-weight:700;font-size:0.8rem;">
+                👥
+              </div>
+            {% endif %}
+
+            <div style="flex:1; min-width:0;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:700; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  {{ c.title }}
+                </span>
+                {% if c.unread_count %}
+                  <span class="badge-counter" style="margin:0;">{{ c.unread_count }}</span>
+                {% endif %}
+              </div>
+              <p class="text-muted" style="font-size:0.8rem; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                {% if c.last_message %}
+                  {{ c.last_message.sender.username }}: {{ c.last_message.text|truncatechars:28 }}
+                {% else %}
+                  <em>No messages yet</em>
+                {% endif %}
+              </p>
+            </div>
+          </a>
+        {% endfor %}
+      {% else %}
+        <div class="text-center" style="padding: 3rem 1rem;">
+          <p class="text-muted">No conversations yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right Column: Active Chat Stream -->
+  <div style="display: flex; flex-direction: column; background: var(--bg);">
+    {% if active_conversation %}
+      <!-- Chat Header -->
+      <div style="padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--bg-surface); display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          {% if other_user %}
+            <a href="{% url 'accounts:profile' username=other_user.username %}" style="font-weight:700; font-size:1.05rem; color:var(--text-main);">
+              {{ conversation_title }}
+            </a>
+            <span class="text-muted" style="font-size:0.85rem;">@{{ other_user.username }}</span>
+          {% else %}
+            <span style="font-weight:700; font-size:1.05rem; color:var(--text-main);">{{ conversation_title }}</span>
+            <span class="badge badge-primary">Group</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Messages Thread -->
+      <div id="chat-messages-container" style="flex:1; overflow-y:auto; padding: 1.25rem; display:flex; flex-direction:column; gap:0.75rem;">
+        {% for m in chat_messages %}
+          <div class="chat-bubble-row" data-msg-id="{{ m.id }}" style="display:flex; flex-direction:column; align-items: {% if m.sender == request.user %}flex-end{% else %}flex-start{% endif %};">
+            <div style="font-size:0.72rem; color:var(--text-subtle); margin-bottom:0.15rem;">
+              {% if m.sender != request.user %}<strong>{{ m.sender.username }}</strong> &bull; {% endif %}{{ m.created_at|date:"H:i" }}
+            </div>
+            <div style="max-width:70%; padding:0.6rem 0.95rem; border-radius:var(--radius-md); font-size:0.92rem; line-height:1.45; word-break:break-word; background: {% if m.sender == request.user %}var(--primary){% else %}var(--bg-surface-elevated){% endif %}; color: #ffffff;">
+              {{ m.text }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Message Input Form -->
+      <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border); background: var(--bg-surface);">
+        <form id="message-send-form" action="{% url 'messaging:send_message' conversation_id=active_conversation.id %}" method="POST" style="display:flex; gap:0.75rem;">
+          {% csrf_token %}
+          <input type="text" id="chat-message-input" name="text" class="form-control" placeholder="Type your message..." autocomplete="off" required>
+          <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+      </div>
+    {% else %}
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem; text-align:center;">
+        <div style="font-size:3rem; margin-bottom:1rem;">💬</div>
+        <h3 style="font-size:1.3rem; margin-bottom:0.5rem;">Your Messages</h3>
+        <p class="text-muted" style="max-width:360px;">Select a conversation from the left or visit someone's profile to start a new private chat.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if active_conversation %}
+<script>
+  const msgContainer = document.getElementById('chat-messages-container');
+  const msgForm = document.getElementById('message-send-form');
+  const msgInput = document.getElementById('chat-message-input');
+  const convoId = {{ active_conversation.id }};
+
+  // Scroll to bottom
+  function scrollToBottom() {
+    if (msgContainer) {
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+  }
+  scrollToBottom();
+
+  // Send message via AJAX
+  if (msgForm) {
+    msgForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = msgInput.value.trim();
+      if (!text) return;
+
+      const formData = new FormData(msgForm);
+      msgInput.value = '';
+
+      try {
+        const res = await apiFetch(msgForm.action, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success && data.message) {
+          appendMessage(data.message);
+          scrollToBottom();
+        }
+      } catch (err) {
+        msgForm.submit();
+      }
+    });
+  }
+
+  function appendMessage(m) {
+    const row = document.createElement('div');
+    row.className = 'chat-bubble-row';
+    row.dataset.msgId = m.id;
+    row.style.display = 'flex';
+    row.style.flexDirection = 'column';
+    row.style.alignItems = m.is_self ? 'flex-end' : 'flex-start';
+
+    row.innerHTML = `
+      <div style="font-size:0.72rem; color:var(--text-subtle); margin-bottom:0.15rem;">
+        ${!m.is_self ? `<strong>${m.sender}</strong> &bull; ` : ''}${m.created_at}
+      </div>
+      <div style="max-width:70%; padding:0.6rem 0.95rem; border-radius:var(--radius-md); font-size:0.92rem; line-height:1.45; word-break:break-word; background: ${m.is_self ? 'var(--primary)' : 'var(--bg-surface-elevated)'}; color: #ffffff;">
+        ${m.text}
+      </div>
+    `;
+    msgContainer.appendChild(row);
+  }
+
+  // Real-time Polling for new incoming messages every 3 seconds
+  let lastMsgId = 0;
+  const existingRows = document.querySelectorAll('.chat-bubble-row');
+  if (existingRows.length > 0) {
+    lastMsgId = parseInt(existingRows[existingRows.length - 1].dataset.msgId || 0);
+  }
+
+  setInterval(async () => {
+    try {
+      const res = await fetch(`/messages/${convoId}/api/poll/?since_id=${lastMsgId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.messages && data.messages.length > 0) {
+          data.messages.forEach(m => {
+            if (!m.is_self) {
+              appendMessage(m);
+            }
+            if (m.id > lastMsgId) lastMsgId = m.id;
+          });
+          scrollToBottom();
+        }
+      }
+    } catch(err) {}
+  }, 3000);
+</script>
+{% endif %}
+{% endblock %}

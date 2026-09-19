@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Feed — Funchat{% endblock %}
+
+{% block content %}
+<div class="layout-grid">
+
+  <!-- =========================
+       LEFT SIDEBAR (NAVIGATION)
+       ========================= -->
+  <aside class="layout-sidebar-left">
+    <div class="card sidebar-profile-card">
+
+      <!-- Current User Profile Link -->
+      <a href="{% url 'accounts:profile' username=user.username %}" class="sidebar-profile">
+        {% if user.profile_picture %}
+          <img
+            src="{{ user.profile_picture.url }}"
+            alt="{{ user.username }}"
+            class="avatar avatar-md"
+          >
+        {% else %}
+          <div class="avatar avatar-md avatar-placeholder">
+            {{ user.username|slice:":1"|upper }}
+          </div>
+        {% endif %}
+        <div class="sidebar-profile-info">
+          <span class="sidebar-profile-name">{{ user.get_display_name }}</span>
+          <span class="sidebar-profile-username">@{{ user.username }}</span>
+        </div>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav class="sidebar-menu" aria-label="Sidebar Navigation">
+        <!-- Home -->
+        <a href="{% url 'feed:home' %}" class="sidebar-link active">
+          <span class="sidebar-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </span>
+          <span>Home</span>
+        </a>
+
+        <!-- Friends -->
+        <a href="{% url 'accounts:friends_list' username=user.username %}" class="sidebar-link">
+          <span class="sidebar-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </span>
+          <span>Friends</span>
+        </a>
+
+        <!-- Saved Posts -->
+        <a href="{% url 'feed:saved_posts' %}" class="sidebar-link">
+          <span class="sidebar-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </span>
+          <span>Saved Posts</span>
+        </a>
+
+        <!-- Messages -->
+        <a href="{% url 'messaging:inbox' %}" class="sidebar-link">
+          <span class="sidebar-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </span>
+          <span>Messages</span>
+        </a>
+
+        <!-- Notifications -->
+        <a href="{% url 'notifications:list' %}" class="sidebar-link">
+          <span class="sidebar-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </span>
+          <span>Notifications</span>
+        </a>
+
+        <!-- Pages -->
+        <a href="{% url 'pages:list' %}" class="sidebar-link">
+          <span class="sidebar-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+              <line x1="4" y1="22" x2="4" y2="15"></line>
+            </svg>
+          </span>
+          <span>Pages</span>
+        </a>
+
+        <!-- Projects -->
+        <a href="{% url 'projects:list' %}" class="sidebar-link">
+          <span class="sidebar-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </span>
+          <span>Projects</span>
+        </a>
+
+        <!-- Bot Studio -->
+        <a href="{% url 'bots:dashboard' %}" class="sidebar-link">
+          <span class="sidebar-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+              <circle cx="12" cy="5" r="2"></circle>
+              <path d="M12 7v4"></path>
+              <line x1="8" y1="16" x2="8.01" y2="16"></line>
+              <line x1="16" y1="16" x2="16.01" y2="16"></line>
+            </svg>
+          </span>
+          <span>Bot Studio</span>
+        </a>
+
+        <!-- Settings -->
+        <a href="{% url 'accounts:profile_edit' %}" class="sidebar-link">
+          <span class="sidebar-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </span>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+    </div>
+  </aside>
+
+
+  <!-- =========================
+       CENTER FEED
+       ========================= -->
+  <section class="layout-center">
+
+    <!-- CREATE POST BOX -->
+    <div class="card create-post-card">
+      <form
+        action="{% url 'feed:post_create' %}"
+        method="POST"
+        enctype="multipart/form-data"
+        class="create-post-form"
+      >
+        {% csrf_token %}
+
+        <div class="create-post-top">
+          <a href="{% url 'accounts:profile' username=user.username %}" class="create-post-avatar-link">
+            {% if user.profile_picture %}
+              <img
+                src="{{ user.profile_picture.url }}"
+                alt="{{ user.username }}"
+                class="avatar avatar-md"
+              >
+            {% else %}
+              <div class="avatar avatar-md avatar-placeholder">
+                {{ user.username|slice:":1"|upper }}
+              </div>
+            {% endif %}
+          </a>
+
+          <div class="create-post-input">
+            {{ post_form.content }}
+          </div>
+        </div>
+
+        <div class="create-post-divider"></div>
+
+        <div class="create-post-bottom">
+          <div class="create-post-tools">
+            <label
+              for="post-image-input"
+              class="create-post-tool-btn photo-tool"
+              title="Add Photo / Video"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="#45bd62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <span>Photo/video</span>
+            </label>
+
+            <span id="selected-file-name" class="selected-file-label"></span>
+
+            <div style="display: none;">
+              {{ post_form.image }}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-sm create-post-submit"
+          >
+            Post
+          </button>
+        </div>
+      </form>
+    </div>
+
+
+    <!-- FEED POSTS -->
+    {% if posts %}
+      {% for post in posts %}
+        {% include 'feed/components/post_card.html' with post=post %}
+      {% endfor %}
+    {% else %}
+      <div class="card empty-feed-card">
+        <div class="empty-feed-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <h3>Your feed is quiet</h3>
+        <p>Follow other users or publish your first post to start the conversation.</p>
+      </div>
+    {% endif %}
+
+  </section>
+
+
+  <!-- =========================
+       RIGHT SIDEBAR
+       ========================= -->
+  <aside class="layout-sidebar-right">
+
+    <!-- PEOPLE TO FOLLOW -->
+    <div class="sidebar-widget">
+      <div class="sidebar-widget-header">
+        <h3 class="sidebar-widget-title">People you may know</h3>
+      </div>
+
+      {% if suggested_users %}
+        <div class="suggested-users-list">
+          {% for su in suggested_users %}
+            <div class="suggested-user-item">
+              <div class="suggested-user-meta">
+                <a href="{% url 'accounts:profile' username=su.username %}">
+                  {% if su.profile_picture %}
+                    <img
+                      src="{{ su.profile_picture.url }}"
+                      alt="{{ su.username }}"
+                      class="avatar avatar-sm"
+                    >
+                  {% else %}
+                    <div class="avatar avatar-sm avatar-placeholder">
+                      {{ su.username|slice:":1"|upper }}
+                    </div>
+                  {% endif %}
+                </a>
+                <div>
+                  <a
+                    href="{% url 'accounts:profile' username=su.username %}"
+                    class="suggested-user-name"
+                  >
+                    {{ su.get_display_name }}
+                  </a>
+                  <span class="suggested-user-handle">
+                    @{{ su.username }}
+                  </span>
+                </div>
+              </div>
+
+              <form
+                action="{% url 'accounts:follow_toggle' username=su.username %}"
+                method="POST"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="btn btn-secondary btn-sm"
+                >
+                  Follow
+                </button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted sidebar-empty-text">
+          You are all caught up!
+        </p>
+      {% endif %}
+    </div>
+
+    <!-- BOT STUDIO PROMO -->
+    <div class="sidebar-widget bot-promo-widget">
+      <div class="bot-promo-header">
+        <div class="bot-promo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+            <circle cx="12" cy="5" r="2"></circle>
+            <path d="M12 7v4"></path>
+            <line x1="8" y1="16" x2="8.01" y2="16"></line>
+            <line x1="16" y1="16" x2="16.01" y2="16"></line>
+          </svg>
+        </div>
+        <h4>Funchat Bot Studio</h4>
+      </div>
+      <p class="bot-promo-text">
+        Build automated bots, register slash commands, generate API keys, and connect webhooks.
+      </p>
+      <a
+        href="{% url 'bots:dashboard' %}"
+        class="btn btn-secondary btn-sm btn-block"
+      >
+        Open Bot Studio
+      </a>
+    </div>
+
+    <!-- FOOTER / COPYRIGHT / METADATA -->
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-links">
+        <a href="{% url 'pages:list' %}">Pages</a> &middot;
+        <a href="{% url 'projects:list' %}">Projects</a> &middot;
+        <a href="{% url 'bots:dashboard' %}">Bot Studio</a>
+      </div>
+      <div class="sidebar-copyright">
+        Funchat &copy; 2026
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+  /* =========================
+     IMAGE SELECT
+     ========================= */
+  const imgInput = document.getElementById('post-image-input');
+  if (imgInput) {
+    imgInput.addEventListener('change', function () {
+      const fileNameSpan = document.getElementById('selected-file-name');
+      if (this.files && this.files.length > 0) {
+        fileNameSpan.textContent = this.files[0].name;
+      } else {
+        fileNameSpan.textContent = '';
+      }
+    });
+  }
+
+  /* =========================
+     REACTION HANDLER
+     ========================= */
+  async function handleReact(e, postId) {
+    e.preventDefault();
+    const form = e.target;
+    const url = form.action;
+    const formData = new FormData(form);
+
+    try {
+      const res = await apiFetch(url, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const countSpan = document.getElementById(`post-${postId}-reactions-count`);
+        if (countSpan) {
+          countSpan.textContent = data.reactions_count;
+        }
+
+        const btn = document.getElementById(`react-btn-${postId}`);
+        if (btn) {
+          if (data.is_reacted) {
+            btn.classList.add('active-like');
+          } else {
+            btn.classList.remove('active-like');
+          }
+        }
+      }
+    } catch (err) {
+      form.submit();
+    }
+  }
+
+  /* =========================
+     SAVE HANDLER
+     ========================= */
+  async function handleSave(e, postId) {
+    e.preventDefault();
+    const form = e.target;
+    const url = form.action;
+    const formData = new FormData(form);
+
+    try {
+      const res = await apiFetch(url, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const btn = document.getElementById(`save-btn-${postId}`);
+        if (btn) {
+          if (data.is_saved) {
+            btn.classList.add('active-save');
+          } else {
+            btn.classList.remove('active-save');
+          }
+        }
+      }
+    } catch (err) {
+      form.submit();
+    }
+  }
+</script>
+{% endblock %}

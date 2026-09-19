@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#1877F2">
+  <title>{% block title %}Funchat{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Header -->
+  {% include 'components/navbar.html' %}
+
+  <!-- Main Layout Container -->
+  <main class="main-content">
+    <div class="container">
+      {% if messages %}
+        <div class="messages-container" aria-live="polite">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-auto-dismiss">
+              <span class="alert-message">{{ message }}</span>
+              <button type="button" class="alert-close" aria-label="Close notification" onclick="this.parentElement.remove()">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Navigation (Visible on mobile screens) -->
+  {% if user.is_authenticated %}
+  <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <a href="{% url 'feed:home' %}" class="mobile-nav-item {% if request.resolver_match.view_name == 'feed:home' %}active{% endif %}" aria-label="Home">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <span>Home</span>
+    </a>
+    <a href="{% url 'accounts:friends_list' username=user.username %}" class="mobile-nav-item {% if 'friends' in request.path %}active{% endif %}" aria-label="Friends">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+      <span>Friends</span>
+    </a>
+    <a href="{% url 'messaging:inbox' %}" class="mobile-nav-item {% if 'messages' in request.path %}active{% endif %}" aria-label="Messages">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>Messages</span>
+    </a>
+    <a href="{% url 'notifications:list' %}" class="mobile-nav-item {% if 'notifications' in request.path %}active{% endif %}" aria-label="Notifications">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+      {% if unread_notifications_count %}
+      <span class="mobile-badge">{{ unread_notifications_count }}</span>
+      {% endif %}
+      <span>Alerts</span>
+    </a>
+    <a href="{% url 'accounts:profile' username=user.username %}" class="mobile-nav-item {% if 'profile' in request.path %}active{% endif %}" aria-label="Profile">
+      {% if user.profile_picture %}
+        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="avatar avatar-xs" style="width:22px; height:22px;">
+      {% else %}
+        <div class="avatar avatar-xs avatar-placeholder" style="width:22px; height:22px; font-size:0.65rem;">
+          {{ user.username|slice:":1"|upper }}
+        </div>
+      {% endif %}
+      <span>Profile</span>
+    </a>
+  </nav>
+  {% endif %}
+
+  <!-- Global Footer -->
+  {% include 'components/footer.html' %}
+
+  <!-- Core JavaScript -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Bot Platform API Documentation — Funchat{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 960px; margin-top: 1.5rem;">
+  <div class="card" style="padding: 2rem;">
+    <div class="card-header">
+      <div>
+        <h1 class="card-title" style="font-size: 1.75rem;">🤖 Funchat Bot API Documentation</h1>
+        <p class="text-muted" style="margin:0;">Version 1.0 &bull; REST API Specification &amp; Code Examples</p>
+      </div>
+      <a href="{% url 'bots:dashboard' %}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
+    </div>
+
+    <!-- Overview -->
+    <div style="margin-top: 1.5rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">1. Authentication</h2>
+      <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 1rem;">
+        Authenticate all API requests by providing your bot's API key in the standard <code>Authorization</code> HTTP header:
+      </p>
+      <pre style="background: var(--bg-surface-elevated); padding: 0.85rem 1rem; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.9rem; border: 1px solid var(--border); overflow-x: auto; color: var(--primary-light);">Authorization: Bearer bot_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</pre>
+    </div>
+
+    <!-- Rate Limits -->
+    <div style="margin-top: 2rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">2. Rate Limits 🚦</h2>
+      <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted);">
+        The Bot API enforces a limit of <strong>120 requests per minute</strong> per bot API key. When exceeded, the server returns <code>HTTP 429 Too Many Requests</code> with a <code>Retry-After</code> header.
+      </p>
+    </div>
+
+    <!-- Sending Messages -->
+    <div style="margin-top: 2rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">3. Send a Message</h2>
+      <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+        <code>POST /api/v1/bots/messages/send</code>
+      </p>
+
+      <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem;">cURL Example:</h3>
+      <pre style="background: var(--bg-surface-elevated); padding: 0.85rem 1rem; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.88rem; border: 1px solid var(--border); overflow-x: auto; margin-bottom: 1rem; color: #fff;">curl -X POST http://127.0.0.1:8000/api/v1/bots/messages/send \
+  -H "Authorization: Bearer bot_live_YOUR_KEY_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient_username": "alice",
+    "text": "Hello Alice! Your study reminder is ready."
+  }'</pre>
+
+      <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem;">Python Example:</h3>
+      <pre style="background: var(--bg-surface-elevated); padding: 0.85rem 1rem; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.88rem; border: 1px solid var(--border); overflow-x: auto; margin-bottom: 1rem; color: #fff;">import requests
+
+url = "http://127.0.0.1:8000/api/v1/bots/messages/send"
+headers = {
+    "Authorization": "Bearer bot_live_YOUR_KEY_HERE",
+    "Content-Type": "application/json"
+}
+payload = {
+    "recipient_username": "alice",
+    "text": "Hello from Python Bot!"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())</pre>
+
+      <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem;">JavaScript / Node.js Example:</h3>
+      <pre style="background: var(--bg-surface-elevated); padding: 0.85rem 1rem; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.88rem; border: 1px solid var(--border); overflow-x: auto; margin-bottom: 1rem; color: #fff;">const fetch = require('node-fetch');
+
+async function sendBotMessage() {
+  const res = await fetch('http://127.0.0.1:8000/api/v1/bots/messages/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer bot_live_YOUR_KEY_HERE',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      recipient_username: 'alice',
+      text: 'Hello from Node.js Bot!'
+    })
+  });
+  const data = await res.json();
+  console.log(data);
+}
+
+sendBotMessage();</pre>
+    </div>
+
+    <!-- Webhooks & Signatures -->
+    <div style="margin-top: 2rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">4. Webhook Signatures &amp; Security</h2>
+      <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 0.75rem;">
+        When webhook events are sent to your callback server, they include cryptographic headers to verify authenticity:
+      </p>
+      <ul style="margin-left: 1.5rem; font-size: 0.92rem; color: var(--text-muted); margin-bottom: 1rem;">
+        <li><code>X-Funchat-Bot-Signature: sha256=&lt;hmac_hex_digest&gt;</code></li>
+        <li><code>X-Funchat-Timestamp: &lt;unix_timestamp&gt;</code></li>
+      </ul>
+
+      <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem;">Verifying in Python:</h3>
+      <pre style="background: var(--bg-surface-elevated); padding: 0.85rem 1rem; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.88rem; border: 1px solid var(--border); overflow-x: auto; color: #fff;">import hmac
+import hashlib
+
+def verify_webhook(raw_payload_bytes, signature_header, secret):
+    expected_sig = "sha256=" + hmac.new(secret.encode(), raw_payload_bytes, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected_sig, signature_header)</pre>
+    </div>
+  </div>
+</div>
+{% endblock %}

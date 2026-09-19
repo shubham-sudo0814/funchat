@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Bot — Funchat Bot Studio{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="margin-top: 2rem;">
+  <div class="card" style="padding: 2rem;">
+    <div class="card-header">
+      <h1 class="card-title">🤖 Create a Telegram-Style Bot</h1>
+      <a href="{% url 'bots:dashboard' %}" class="btn btn-outline btn-sm">&larr; Back to Bots</a>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.name.id_for_label }}">Bot Name</label>
+        {{ form.name }}
+        <div class="form-help">Human-friendly name, e.g. Study Assistant, News Bot.</div>
+        {% if form.name.errors %}
+          <div class="form-error">{{ form.name.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.username.id_for_label }}">Bot Username</label>
+        {{ form.username }}
+        <div class="form-help">Unique handle starting with @, e.g. @study_assistant_bot. Must end in _bot.</div>
+        {% if form.username.errors %}
+          <div class="form-error">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.description.id_for_label }}">Description</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+          <div class="form-error">{{ form.description.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.profile_image.id_for_label }}">Bot Avatar Picture</label>
+        {{ form.profile_image }}
+        {% if form.profile_image.errors %}
+          <div class="form-error">{{ form.profile_image.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Permissions -->
+      <div style="background:var(--bg-surface-elevated); padding:1rem; border-radius:var(--radius-md); border:1px solid var(--border); margin-bottom:1.5rem;">
+        <h3 style="font-size:0.95rem; font-weight:700; margin-bottom:0.75rem;">Bot Permissions</h3>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.9rem;">
+          <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+            {{ form.can_send_messages }} <span>Allow bot to send direct messages</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+            {{ form.can_use_commands }} <span>Allow bot to listen to slash commands</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+            {{ form.can_send_notifications }} <span>Allow bot to trigger notifications</span>
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:1rem;">
+        <a href="{% url 'bots:dashboard' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create Bot &amp; Generate Key</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

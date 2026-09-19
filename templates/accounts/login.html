@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In — Funchat{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="margin-top: 3rem;">
+  <div class="card" style="padding: 2.5rem 2rem;">
+    <div class="text-center mb-3">
+      <h1 style="font-size: 1.85rem; font-weight: 800; margin-bottom: 0.5rem;">Welcome Back 👋</h1>
+      <p class="text-muted">Sign in to your Funchat account.</p>
+    </div>
+
+    <form method="POST" action="{% url 'accounts:login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" novalidate>
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div class="form-error">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div class="form-error">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg mt-2">
+        Log In
+      </button>
+    </form>
+
+    <div class="text-center mt-3" style="font-size: 0.92rem; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+      <span class="text-muted">Don't have an account yet?</span>
+      <a href="{% url 'accounts:register' %}" style="font-weight: 600; margin-left: 0.3rem;">Sign Up</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

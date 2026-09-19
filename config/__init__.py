@@ -1,0 +1,3 @@
+"""
+Funchat Configuration Package.
+"""

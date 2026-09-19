@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block title %}Post by @{{ post.author.username }} — Funchat{% endblock %}
+
+{% block content %}
+
+<div class="container container-narrow post-detail-page">
+
+  <!-- Back -->
+  <div class="post-detail-back">
+    <a href="{% url 'feed:home' %}" class="back-link">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6"/>
+      </svg>
+      <span>Back to Feed</span>
+    </a>
+  </div>
+
+
+  <!-- Main Post -->
+  {% include 'feed/components/post_card.html' with post=post %}
+
+
+  <!-- =========================
+       COMMENTS
+       ========================= -->
+
+  <section class="card comments-card">
+
+    <div class="comments-header">
+
+      <div>
+        <h2>
+          Comments
+          <span class="comments-count">
+            {{ post.comments_count }}
+          </span>
+        </h2>
+
+        <p>
+          Join the conversation.
+        </p>
+      </div>
+
+    </div>
+
+
+    <!-- ADD COMMENT -->
+
+    <form
+      action="{% url 'feed:comment_create' pk=post.pk %}"
+      method="POST"
+      class="comment-form"
+    >
+
+      {% csrf_token %}
+
+      <div class="comment-composer">
+
+        <div class="comment-composer-avatar">
+
+          {% if request.user.profile_picture %}
+
+            <img
+              src="{{ request.user.profile_picture.url }}"
+              alt="{{ request.user.username }}"
+              class="avatar avatar-sm"
+            >
+
+          {% else %}
+
+            <div class="avatar avatar-sm avatar-placeholder">
+              {{ request.user.username|slice:":1"|upper }}
+            </div>
+
+          {% endif %}
+
+        </div>
+
+
+        <div class="comment-input-wrapper">
+
+          {{ comment_form.content }}
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-sm comment-submit"
+          >
+            Comment
+          </button>
+
+        </div>
+
+      </div>
+
+    </form>
+
+
+    <!-- COMMENTS LIST -->
+
+    {% if comments %}
+
+      <div class="comments-list">
+
+        {% for comment in comments %}
+
+          <article class="comment-item">
+
+            <div class="comment-main">
+
+              <!-- Avatar -->
+
+              <a
+                href="{% url 'accounts:profile' username=comment.author.username %}"
+                class="comment-avatar"
+              >
+
+                {% if comment.author.profile_picture %}
+
+                  <img
+                    src="{{ comment.author.profile_picture.url }}"
+                    alt="{{ comment.author.username }}"
+                    class="avatar avatar-sm"
+                  >
+
+                {% else %}
+
+                  <div class="avatar avatar-sm avatar-placeholder">
+                    {{ comment.author.username|slice:":1"|upper }}
+                  </div>
+
+                {% endif %}
+
+              </a>
+
+
+              <!-- Comment Body -->
+
+              <div class="comment-body">
+
+                <div class="comment-bubble">
+
+                  <div class="comment-author-row">
+
+                    <a
+                      href="{% url 'accounts:profile' username=comment.author.username %}"
+                      class="comment-author"
+                    >
+                      {{ comment.author.get_display_name }}
+                    </a>
+
+                    <span class="comment-username">
+                      @{{ comment.author.username }}
+                    </span>
+
+                  </div>
+
+
+                  <p class="comment-content">
+                    {{ comment.content }}
+                  </p>
+
+                </div>
+
+
+                <div class="comment-meta">
+
+                  <a
+                    href="{% url 'feed:post_detail' pk=post.pk %}"
+                    class="comment-time"
+                  >
+                    {{ comment.created_at|timesince }} ago
+                  </a>
+
+
+                  {% if comment.author == request.user or post.author == request.user %}
+
+                    <form
+                      action="{% url 'feed:comment_delete' pk=comment.pk %}"
+                      method="POST"
+                      onsubmit="return confirm('Delete comment?');"
+                    >
+
+                      {% csrf_token %}
+
+                      <button
+                        type="submit"
+                        class="comment-delete"
+                        title="Delete comment"
+                      >
+                        Delete
+                      </button>
+
+                    </form>
+
+                  {% endif %}
+
+                </div>
+
+
+                <!-- Nested Replies -->
+
+                {% if comment.replies.all %}
+
+                  <div class="comment-replies">
+
+                    {% for reply in comment.replies.all %}
+
+                      <div class="reply-item">
+
+                        <a
+                          href="{% url 'accounts:profile' username=reply.author.username %}"
+                          class="reply-avatar"
+                        >
+
+                          {% if reply.author.profile_picture %}
+
+                            <img
+                              src="{{ reply.author.profile_picture.url }}"
+                              alt="{{ reply.author.username }}"
+                              class="avatar avatar-xs"
+                            >
+
+                          {% else %}
+
+                            <div class="avatar avatar-xs avatar-placeholder">
+                              {{ reply.author.username|slice:":1"|upper }}
+                            </div>
+
+                          {% endif %}
+
+                        </a>
+
+
+                        <div class="reply-content-wrapper">
+
+                          <div class="reply-bubble">
+
+                            <div class="reply-author">
+                              {{ reply.author.get_display_name }}
+                            </div>
+
+                            <p>
+                              {{ reply.content }}
+                            </p>
+
+                          </div>
+
+                          <span class="reply-time">
+                            {{ reply.created_at|timesince }} ago
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                    {% endfor %}
+
+                  </div>
+
+                {% endif %}
+
+              </div>
+
+            </div>
+
+          </article>
+
+        {% endfor %}
+
+      </div>
+
+    {% else %}
+
+      <!-- Empty Comments -->
+
+      <div class="comments-empty">
+
+        <div class="comments-empty-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H12l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z"/>
+          </svg>
+        </div>
+
+        <h3>No comments yet</h3>
+
+        <p>
+          Be the first person to start the conversation.
+        </p>
+
+      </div>
+
+    {% endif %}
+
+  </section>
+
+</div>
+
+{% endblock %}

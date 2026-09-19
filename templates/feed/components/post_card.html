@@ -1,0 +1,238 @@
+<article class="card post-card" id="post-{{ post.id }}">
+
+  <!-- =========================
+       POST HEADER
+       ========================= -->
+  <header class="post-header">
+    <div class="post-author-meta">
+      <a
+        href="{% url 'accounts:profile' username=post.author.username %}"
+        class="post-author-avatar"
+      >
+        {% if post.author.profile_picture %}
+          <img
+            src="{{ post.author.profile_picture.url }}"
+            alt="{{ post.author.username }}"
+            class="avatar avatar-sm"
+          >
+        {% else %}
+          <div class="avatar avatar-sm avatar-placeholder">
+            {{ post.author.username|slice:":1"|upper }}
+          </div>
+        {% endif %}
+      </a>
+
+      <div class="post-author-info">
+        <div class="author-name">
+          <a href="{% url 'accounts:profile' username=post.author.username %}">
+            {{ post.author.get_display_name }}
+          </a>
+          <span class="author-username">@{{ post.author.username }}</span>
+        </div>
+
+        <div class="post-time">
+          <a href="{% url 'feed:post_detail' pk=post.pk %}">
+            {{ post.created_at|timesince }} ago
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- OWNER CONTROLS -->
+    {% if post.author == request.user %}
+      <div class="post-owner-actions">
+        <a
+          href="{% url 'feed:post_edit' pk=post.pk %}"
+          class="post-owner-btn"
+          title="Edit post"
+          aria-label="Edit post"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </a>
+
+        <form
+          action="{% url 'feed:post_delete' pk=post.pk %}"
+          method="POST"
+          onsubmit="return confirm('Delete this post?');"
+        >
+          {% csrf_token %}
+          <button
+            type="submit"
+            class="post-owner-btn danger"
+            title="Delete post"
+            aria-label="Delete post"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        </form>
+      </div>
+    {% endif %}
+  </header>
+
+
+  <!-- =========================
+       REPOST / SHARED NOTICE
+       ========================= -->
+  {% if post.shared_from %}
+    <div class="post-shared-banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="17 1 21 5 17 9"></polyline>
+        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+        <polyline points="7 23 3 19 7 15"></polyline>
+        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+      </svg>
+      <span>
+        Reposted from
+        <a href="{% url 'accounts:profile' username=post.shared_from.author.username %}">
+          @{{ post.shared_from.author.username }}
+        </a>
+      </span>
+    </div>
+  {% endif %}
+
+
+  <!-- =========================
+       POST TEXT
+       ========================= -->
+  {% if post.content %}
+    <div class="post-content">
+      {{ post.content }}
+    </div>
+  {% endif %}
+
+
+  <!-- =========================
+       POST MEDIA
+       ========================= -->
+  {% if post.image %}
+    <div class="post-media">
+      <img
+        src="{{ post.image.url }}"
+        alt="Post image"
+        loading="lazy"
+      >
+    </div>
+  {% elif post.shared_from and post.shared_from.image %}
+    <div class="post-media">
+      <img
+        src="{{ post.shared_from.image.url }}"
+        alt="Shared post image"
+        loading="lazy"
+      >
+    </div>
+  {% endif %}
+
+
+  <!-- =========================
+       POST STATS
+       ========================= -->
+  <div class="post-stats">
+    <div class="post-reaction-summary">
+      <span class="reaction-badge" title="Like">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/>
+        </svg>
+      </span>
+      <span id="post-{{ post.id }}-reactions-count">
+        {{ post.reactions_count }}
+      </span>
+    </div>
+
+    <div class="post-stat-links">
+      <a href="{% url 'feed:post_detail' pk=post.pk %}">
+        {{ post.comments_count }} comments
+      </a>
+      <span>
+        {{ post.shares_count }} shares
+      </span>
+    </div>
+  </div>
+
+
+  <!-- =========================
+       POST ACTIONS
+       ========================= -->
+  <div class="post-actions">
+
+    <!-- LIKE -->
+    <form
+      action="{% url 'feed:post_react' pk=post.pk %}"
+      method="POST"
+      onsubmit="handleReact(event, {{ post.id }});"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="reaction_type" value="LIKE">
+      <button
+        type="submit"
+        class="action-btn"
+        id="react-btn-{{ post.id }}"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+        </svg>
+        <span>Like</span>
+      </button>
+    </form>
+
+    <!-- COMMENT -->
+    <a
+      href="{% url 'feed:post_detail' pk=post.pk %}"
+      class="action-btn"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>Comment</span>
+    </a>
+
+    <!-- SHARE -->
+    <form
+      action="{% url 'feed:post_share' pk=post.pk %}"
+      method="POST"
+    >
+      {% csrf_token %}
+      <button
+        type="submit"
+        class="action-btn"
+        title="Share post"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+        <span>Share</span>
+      </button>
+    </form>
+
+    <!-- SAVE -->
+    <form
+      action="{% url 'feed:post_save' pk=post.pk %}"
+      method="POST"
+      onsubmit="handleSave(event, {{ post.id }});"
+    >
+      {% csrf_token %}
+      <button
+        type="submit"
+        class="action-btn"
+        id="save-btn-{{ post.id }}"
+        title="Save post"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Save</span>
+      </button>
+    </form>
+
+  </div>
+
+</article>

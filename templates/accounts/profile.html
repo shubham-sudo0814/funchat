@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}@{{ profile_user.username }} — Funchat{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 860px;">
+  <!-- Profile Header Card -->
+  <div class="card" style="padding: 2rem;">
+    <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+      <!-- Avatar -->
+      <div>
+        {% if profile_user.profile_picture %}
+          <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="avatar avatar-xl">
+        {% else %}
+          <div class="avatar avatar-xl" style="display:flex;align-items:center;justify-content:center;background:#374151;color:#fff;font-size:2.2rem;font-weight:700;">
+            {{ profile_user.username|slice:":1"|upper }}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Info & Actions -->
+      <div style="flex: 1; min-width: 280px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem;">
+          <div>
+            <h1 style="font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+              {{ profile_user.get_display_name }}
+              {% if profile_user.is_verified %}
+                <span title="Verified" style="color: var(--primary); font-size: 1.1rem;">✓</span>
+              {% endif %}
+              {% if profile_user.is_private %}
+                <span title="Private Account" style="color: var(--text-muted); font-size: 0.95rem;">🔒</span>
+              {% endif %}
+            </h1>
+            <p class="text-muted" style="font-size: 0.95rem;">@{{ profile_user.username }}</p>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            {% if is_self %}
+              <a href="{% url 'accounts:profile_edit' %}" class="btn btn-secondary btn-sm">Edit Profile</a>
+              <a href="{% url 'accounts:logout' %}" class="btn btn-outline btn-sm">Log Out</a>
+            {% else %}
+              <!-- Follow / Unfollow Form -->
+              <form action="{% url 'accounts:follow_toggle' username=profile_user.username %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                {% if is_following %}
+                  <button type="submit" class="btn btn-secondary btn-sm">Following</button>
+                {% else %}
+                  <button type="submit" class="btn btn-primary btn-sm">+ Follow</button>
+                {% endif %}
+              </form>
+
+              <!-- Friendship Actions -->
+              {% if friendship_status == 'friends' %}
+                <form action="{% url 'accounts:unfriend' username=profile_user.username %}" method="POST" style="display:inline;" onsubmit="return confirm('Remove friend?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-secondary btn-sm">✓ Friends (Remove)</button>
+                </form>
+              {% elif friendship_status == 'sent_pending' %}
+                <form action="{% url 'accounts:friend_request_cancel' username=profile_user.username %}" method="POST" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline btn-sm">Cancel Request</button>
+                </form>
+              {% elif friendship_status == 'received_pending' %}
+                <form action="{% url 'accounts:friend_request_accept' username=profile_user.username %}" method="POST" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary btn-sm">Accept Request</button>
+                </form>
+                <form action="{% url 'accounts:friend_request_reject' username=profile_user.username %}" method="POST" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline btn-sm">Decline</button>
+                </form>
+              {% else %}
+                <form action="{% url 'accounts:friend_request_send' username=profile_user.username %}" method="POST" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline btn-sm">Add Friend</button>
+                </form>
+              {% endif %}
+
+              <a href="{% url 'messaging:direct_chat' username=profile_user.username %}" class="btn btn-outline btn-sm">Message</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Bio & Location -->
+        {% if profile_user.bio %}
+          <p style="margin-bottom: 0.75rem; font-size: 0.96rem; line-height: 1.5;">{{ profile_user.bio }}</p>
+        {% endif %}
+
+        <div style="display: flex; gap: 1.25rem; font-size: 0.85rem; color: var(--text-subtle); flex-wrap: wrap; margin-bottom: 1rem;">
+          {% if profile_user.location %}
+            <span>📍 {{ profile_user.location }}</span>
+          {% endif %}
+          <span>📅 Joined {{ profile_user.date_joined|date:"F Y" }}</span>
+        </div>
+
+        <!-- Relationship Counters -->
+        <div style="display: flex; gap: 1.5rem; font-size: 0.92rem; border-top: 1px solid var(--border); padding-top: 0.85rem;">
+          <a href="{% url 'accounts:followers_list' username=profile_user.username %}" style="color: var(--text-main);">
+            <strong id="followers-count">{{ followers_count }}</strong> <span class="text-muted">Followers</span>
+          </a>
+          <a href="{% url 'accounts:following_list' username=profile_user.username %}" style="color: var(--text-main);">
+            <strong>{{ following_count }}</strong> <span class="text-muted">Following</span>
+          </a>
+          <a href="{% url 'accounts:friends_list' username=profile_user.username %}" style="color: var(--text-main);">
+            <strong>{{ friends_count }}</strong> <span class="text-muted">Friends</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Section / Posts -->
+  {% if can_view_content %}
+    <div class="card-header" style="margin-top: 1.5rem;">
+      <h2 class="card-title">Posts</h2>
+    </div>
+
+    {% if posts %}
+      {% for post in posts %}
+        {% include 'feed/components/post_card.html' with post=post %}
+      {% endfor %}
+    {% else %}
+      <div class="card text-center" style="padding: 3rem;">
+        <p class="text-muted">No posts shared yet.</p>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="card text-center" style="padding: 3.5rem;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">This Account is Private</h3>
+      <p class="text-muted">Add @{{ profile_user.username }} as a friend to see their posts and activity.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

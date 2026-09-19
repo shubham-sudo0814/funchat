@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Pages &amp; Communities — Funchat{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 960px; margin-top: 1.5rem;">
+  <div class="card" style="padding: 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+    <div>
+      <h1 class="card-title" style="font-size: 1.5rem;">📄 Pages &amp; Communities</h1>
+      <p class="text-muted" style="margin:0;">Discover brands, creators, clubs, and college organizations.</p>
+    </div>
+    <a href="{% url 'pages:create' %}" class="btn btn-primary">+ Create Page</a>
+  </div>
+
+  <!-- Owned Pages (if any) -->
+  {% if owned_pages %}
+    <div class="card-header" style="margin-top: 1.5rem;">
+      <h2 class="card-title" style="font-size: 1.15rem;">Pages You Manage</h2>
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+      {% for p in owned_pages %}
+        <div class="card" style="margin:0; padding:1.25rem;">
+          <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+            {% if p.avatar %}
+              <img src="{{ p.avatar.url }}" alt="{{ p.name }}" class="avatar avatar-md">
+            {% else %}
+              <div class="avatar avatar-md" style="display:flex;align-items:center;justify-content:center;background:var(--primary);color:#fff;font-weight:700;">
+                {{ p.name|slice:":1"|upper }}
+              </div>
+            {% endif %}
+            <div>
+              <a href="{% url 'pages:detail' slug=p.slug %}" style="font-weight:700; color:var(--text-main); font-size:1rem; display:block;">
+                {{ p.name }}
+              </a>
+              <span class="badge badge-primary">{{ p.get_category_display }}</span>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:0.85rem; line-height:1.4;">{{ p.description|truncatechars:90 }}</p>
+          <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center;">
+            <span class="text-muted" style="font-size:0.82rem;">{{ p.followers_count }} followers</span>
+            <a href="{% url 'pages:detail' slug=p.slug %}" class="btn btn-outline btn-sm">Manage</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- All Pages -->
+  <div class="card-header">
+    <h2 class="card-title" style="font-size: 1.15rem;">Explore Pages</h2>
+  </div>
+
+  {% if pages %}
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+      {% for p in pages %}
+        <div class="card" style="margin:0; padding:1.25rem;">
+          <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+            {% if p.avatar %}
+              <img src="{{ p.avatar.url }}" alt="{{ p.name }}" class="avatar avatar-md">
+            {% else %}
+              <div class="avatar avatar-md" style="display:flex;align-items:center;justify-content:center;background:var(--secondary);color:#fff;font-weight:700;">
+                {{ p.name|slice:":1"|upper }}
+              </div>
+            {% endif %}
+            <div>
+              <a href="{% url 'pages:detail' slug=p.slug %}" style="font-weight:700; color:var(--text-main); font-size:1rem; display:block;">
+                {{ p.name }}
+              </a>
+              <span class="badge">{{ p.get_category_display }}</span>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:0.85rem; line-height:1.4;">{{ p.description|truncatechars:90 }}</p>
+          <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center;">
+            <span class="text-muted" style="font-size:0.82rem;">{{ p.followers_count }} followers</span>
+            <a href="{% url 'pages:detail' slug=p.slug %}" class="btn btn-primary btn-sm">View Page</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card text-center" style="padding: 3rem;">
+      <p class="text-muted">No pages created yet. Be the first to build a community page!</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
